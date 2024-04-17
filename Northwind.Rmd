@@ -1,0 +1,116 @@
+---
+title: "Northwind Traders"
+output:
+  beamer_presentation:
+    toc: false
+    keep_tex: true
+    latex_engine: xelatex
+    includes:
+      # in_header: nw_report_header.tex
+classoption: "aspectratio=169"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE,
+                      fig.showtext= TRUE)
+
+options(tinytex.verbose = TRUE)
+
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(lubridate)
+library(scales)
+library(DBI)
+library(RSQLite)
+library(showtext)
+
+# Add the Open Sans font
+font.add("opensans", regular = "C:/Users/Kumar/Downloads/Open_Sans/OpenSans-Italic-VariableFont_wdth,wght.ttf")
+
+showtext.auto()
+
+nw_db_con <- DBI::dbConnect(RSQLite::SQLite(), dbname = "C:/Users/Kumar/Downloads/northwind (1).db")
+
+nw_data <- nw_db_con %>%
+  tbl(sql("SELECT c.categoryname, 
+    p.productname, 
+    od.unitprice, 
+    od.quantity, 
+    cu.contactname, 
+    e.region, 
+    e.firstname || ' ' || e.lastname AS EmpName, 
+    o.orderdate 
+    FROM   categories c 
+    INNER JOIN products p 
+      ON c.CategoryID = p.Categoryid 
+    INNER JOIN [order details]  od 
+      ON p.Productid = od.productid 
+    INNER JOIN orders o 
+      ON od.orderid = o.orderid 
+    INNER JOIN customers cu 
+      ON o.customerid = cu.customerid 
+    INNER JOIN employees e 
+      ON o.employeeid = e.employeeid" 
+    )
+  ) %>%
+  collect()
+
+nw_data <- mutate(nw_data, OrderDate = as.Date(OrderDate, format = "%Y-%m-%d"))
+
+cat_counts <- count(nw_data, CategoryName)
+
+# Define the function
+my_calendarheatmap <- function(df, xvar, yearvar, fillvar, fillvarformat = "comma", legendtitle) {
+  g <- ggplot(df, aes_string(x = xvar, y = yearvar, fill = fillvar)) + 
+        geom_tile(colour = "white") + 
+        scale_fill_gradientn(colors = c("#fee0d2", "#fc9272", '#CC0000'),
+                             breaks = pretty_breaks(3),
+                             label = scales::comma)
+    g <- g + theme_bw() + 
+        theme(axis.ticks = element_blank(),
+              legend.position = "top",
+              panel.border = element_blank(),
+              panel.grid = element_blank(),
+              legend.key = element_blank(),
+              legend.margin = unit(-0.4, "lines"),
+              plot.margin = unit(c(0.5, 0.1, 0.15, 0.1), "lines")
+        )
+    
+    g <- g + theme(axis.title = element_blank(),
+                   legend.text = element_text(size = rel(1)),
+                   axis.text.x = element_text(margin = margin(t = -5, b = 0.5))
+    )
+    
+    g + scale_x_continuous(breaks = 1:12,
+                           labels = month.abb,
+                           expand = c(0, 0)) + 
+        scale_y_reverse(breaks = min(df[[yearvar]]):max(df[[yearvar]])) +  # Use custom breaks
+        guides(fill = guide_legend(keywidth = rel(1),
+                                   keyheight = rel(0.5),
+                                   title = legendtitle,
+                                   direction = "horizontal"
+        ))
+}
+```
+
+
+
+
+
+```{r , include=FALSE}
+out <- NULL
+for (i in 1:2) {
+  out <- c(out, knitr::knit_child('Northwind_child_report.Rmd'))
+}
+```
+
+`r paste(out, collapse = '\n')` 
+```
+

@@ -1,0 +1,140 @@
+```{r, echo=FALSE}
+cat_loop_name <-  as.character(select(filter(cat_counts, row_number() == i), CategoryName))
+data <- filter(nw_data, CategoryName == cat_loop_name)
+```
+
+# `r cat_loop_name`
+cat
+\begin{columns}[T]
+    \begin{column}{0.30\textwidth} %first column
+    Top Products
+    \scriptsize
+```{r}
+#http://haozhu233.github.io/kableExtra/awesome_table_in_pdf.pdf
+arrange(data, desc(Quantity)) %>%
+  head(n = 5) %>%
+  select(Product = ProductName, Quantity) %>%
+  arrange(desc(Quantity)) %>%
+  kable(format = "latex", booktabs = TRUE) %>%
+  #kable_styling(latex_options = "striped") %>% 
+  #kable_styling(full_width = F) %>%
+  column_spec(1, width = "0.9in")
+```
+    \normalsize
+    \end{column}
+    \hfill
+  \begin{column}{0.30\textwidth} %second column
+  Top Customers
+      \scriptsize
+```{r}
+arrange(data, desc(Quantity)) %>%
+  head(n = 5) %>%
+  select(`Contact Name`= ContactName, Quantity) %>%
+  arrange(desc(Quantity)) %>%
+  kable(format = "latex", booktabs = TRUE) %>%
+  #kable_styling(latex_options = "striped") %>% 
+  #kable_styling(full_width = F) %>%
+  column_spec(1, width = "0.9in")
+```
+      \normalsize
+   \end{column}
+   \hfill
+     \begin{column}{0.30\textwidth} %third column
+     Top Employees
+       \scriptsize
+```{r}
+arrange(data, desc(Quantity)) %>%
+  head(n = 5) %>%
+  select(Employee = EmpName, Quantity) %>%
+  arrange(desc(Quantity)) %>%
+  kable(format = "latex", booktabs = TRUE) %>%
+  #kable_styling(latex_options = "striped") %>% 
+  #kable_styling(full_width = F) %>%
+  column_spec(1, width = "0.9in")
+```
+       \normalsize
+    \end{column}
+\end{columns}
+
+\vspace{2em}
+
+\begin{columns}[T]
+    \begin{column}{0.30\textwidth} %second row, first column heat map
+    Monthly Sales
+```{r, out.width="\\textwidth", fig.width=3.8,fig.height=1.8,fig.asp=NA}
+g <- data %>%
+  mutate(order_month = month(OrderDate),
+         order_year = year(OrderDate)) %>%
+  group_by(order_year, order_month) %>%
+  summarize(monthly_sales = sum(Quantity * UnitPrice)) %>%
+  my_calendarheatmap(
+    df = .,
+    xvar = "order_month",
+    y = "order_year",
+    fillvar = "monthly_sales",
+    legendtitle = "Sales",
+    fillvarformat = dollar
+  )
+g + theme(
+  axis.text.y = element_text(size = rel(1)),
+  axis.text.x = element_text(size = rel(0.8), face = "bold"),
+  panel.background = element_rect(fill = "grey98"),
+  plot.background = element_rect(fill = "grey98")
+)
+```
+    \end{column}
+    \hfill
+    \begin{column}{0.30\textwidth} %second row, second column bar chart
+    Top Products/Quantity
+```{r, out.width="\\textwidth", fig.width=3.5,fig.height=1.8,fig.asp=NA}
+g <- group_by(data, ProductName) %>%
+  summarize(qty = sum(Quantity)) %>%
+  arrange(desc(qty)) %>%
+  head(n = 5) %>%
+  ggplot(data = ., aes(x = reorder(ProductName, qty), y = qty)) +
+  geom_bar(stat = "identity", fill = "#fc9272", width = 0.5) +
+  coord_flip()
+
+g + theme(
+  axis.text.y = element_text(size = rel(1), hjust = 0),
+  axis.text.x = element_text(size = rel(1), face = "bold"),
+  panel.background = element_rect(fill = "grey98"),
+  plot.background = element_rect(fill = "grey98"),
+  axis.title = element_blank(),
+  panel.border = element_blank(),
+  panel.grid.major.x = element_line(color = "gray90")
+)
+
+```
+    \end{column}
+    \hfill
+     \begin{column}{0.30\textwidth} %second row, third column bar chart
+     Top Products/Sales
+```{r, out.width="\\textwidth", fig.width=3.5,fig.height=1.8,fig.asp=NA}
+g <- group_by(data, ProductName) %>%
+  summarize(sales = sum(UnitPrice)) %>%
+  arrange(desc(sales)) %>%
+  head(n = 5) %>%
+  ggplot(data = ., aes(x = reorder(ProductName, sales), y = sales)) +
+  geom_bar(stat = "identity", fill = "#fc9272", width = 0.5) +
+  scale_y_continuous(labels = dollar) +
+  coord_flip()
+
+g + theme(
+  axis.text.y = element_text(size = rel(1), hjust = 0),
+  axis.text.x = element_text(size = rel(1), face = "bold"),
+  panel.background = element_rect(fill = "grey98"),
+  plot.background = element_rect(fill = "grey98"),
+  axis.title = element_blank(),
+  panel.border = element_blank(),
+  panel.grid.major.x = element_line(color = "gray90")
+)
+
+```
+    \end{column}
+\end{columns}
+
+
+
+
+

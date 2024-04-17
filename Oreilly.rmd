@@ -1,0 +1,46 @@
+---
+title: RmarkdoWN Practice
+Author: Kumar Tare
+df_print: "kable"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache = TRUE, fig.align = 'center')
+```
+
+## Onpoint Insights
+
+# Simple code
+```{r}
+1+1
+
+```
+```{r Substraction}
+5 - 3
+4*2
+5-3
+```
+
+#Data  Display
+```{r show-data}
+data(diamonds,package='ggplot2')
+head(diamonds)
+```
+```{r show-data-2}
+knitr::kable(head(diamonds))
+```
+```{r show-data-3}
+DT::datatable(head(diamonds))
+```
+
+# plots
+
+
+```{r}
+plot(1:10)
+```
+
+```{r new_plot, cache=TRUE echo=FALSE}
+plot(1:10)
+```
+

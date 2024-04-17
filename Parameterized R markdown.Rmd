@@ -1,0 +1,67 @@
+---
+title: "Parameterized RMarkdown"
+author: "Kumar Tare"
+date: "04/04/2024"
+output: html_document
+params:
+  year:
+    label: "Year"
+    value: 2017
+    input: slider
+    min: 2010
+    max: 2020
+    step: 1
+    sep: ""
+  data:
+    label: "Data Set:"
+    value: diamonds
+    input: select
+    choices: [mpg, diamonds, iris, mtcars]  # Added iris and mtcars datasets
+  file:
+    label: "Input dataset:"
+    value: results.csv
+    input: file
+---
+```{r}
+# Install and load required packages
+if (!requireNamespace("magrittr", quietly = TRUE)) {
+  install.packages("magrittr")
+}
+library(magrittr)
+library(ggplot2)
+
+# Filter data based on the selected dataset
+selected_data <- switch(params$data,
+                        "mpg" = mpg,
+                        "diamonds" = diamonds,
+                        "iris" = iris,  # Added iris dataset
+                        "mtcars" = mtcars)  # Added mtcars dataset
+
+# Create ggplot based on the selected dataset
+if (params$data == "diamonds") {
+  ggplot(selected_data) +
+    aes(x = cut, y = color, fill = clarity) +
+    geom_tile(size = 1L) +
+    scale_fill_hue() +
+    theme_minimal()
+} else if (params$data == "mpg") {
+  ggplot(selected_data) +
+    aes(x = manufacturer) +
+    geom_bar(fill = "#0c4c8a") +
+    theme_minimal()
+} else if (params$data == "iris") {
+  ggplot(selected_data) +
+    aes(x = Sepal.Length, y = Sepal.Width, color = Species) +
+    geom_point() +
+    theme_minimal()
+} else if (params$data == "mtcars") {
+  ggplot(selected_data) +
+    aes(x = mpg, y = wt, color = factor(cyl)) +
+    geom_point() +
+    theme_minimal()
+}
+
+
+
+
+
