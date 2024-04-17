@@ -1,0 +1,18 @@
+Child Doc Info
+
+Filtering Data by Category:
+
+The code starts by filtering the nw_data dataframe based on each category iteratively using a loop.
+Displaying Top Products, Customers, and Employees:
+
+For each category, it displays the top products, customers, and employees associated with that category in three columns using LaTeX's columns environment.
+It calculates the top products, customers, and employees based on the quantity sold.
+Monthly Sales Heatmap:
+
+It creates a heatmap representing monthly sales for each category over the years.
+Top Products by Quantity Bar Chart:
+
+It generates a horizontal bar chart showing the top products by quantity sold for each category.
+Top Products by Sales Bar Chart:
+
+It generates a horizontal bar chart showing the top products by sales revenue for each category.
